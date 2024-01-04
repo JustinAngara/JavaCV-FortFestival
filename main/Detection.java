@@ -66,9 +66,11 @@ public class Detection implements NativeKeyListener{
 	
 	
 	public static void releaseInfo(IplImage img) throws AWTException {
+		
 		if(img==null) {
 			return;
 		}
+		
         cvSize = cvSize(img.width(), img.height());
         gry=cvCreateImage(cvSize, img.depth(), 1);
         cvCvtColor(img, gry, CV_BGR2GRAY);
@@ -80,17 +82,20 @@ public class Detection implements NativeKeyListener{
         contours = new CvContour(null);
 
         noOfContors = cvFindContours(gry, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, new CvPoint(0,0));
-
+        
         ptr = new CvSeq();
 
         count =1;
         p1 = new CvPoint(0,0);
         p2 = new CvPoint(0,0);
 
+        
         for (ptr = contours; ptr != null; ptr = ptr.h_next()) {
 
-            sq = cvBoundingRect(ptr, 0);     
-            if(sq.width() > sq.height()) {
+
+            sq = cvBoundingRect(ptr, 0); 
+            if(Math.abs(sq.width() - sq.height()) <= 5 &&
+            	sq.width() < 25 &&sq.width() > 10) {
                 System.out.println("Contour No ="+count);
                 System.out.println("X ="+ sq.x()+" Y="+ sq.y());
                 System.out.println("Height ="+sq.height()+" Width ="+sq.width());
@@ -106,6 +111,9 @@ public class Detection implements NativeKeyListener{
         }
         
 
+
+
+        
         cvShowImage("contures",img);
         cvWaitKey(1);
       
@@ -163,14 +171,13 @@ public class Detection implements NativeKeyListener{
 		try {
 
 
-            
-            Rectangle region = new Rectangle(x, y, x1 - x, y1 - y); // Top-left coordinates, width, height
+            // real rect
+//            Rectangle region = new Rectangle(x, y, x1 - x, y1 - y); // Top-left coordinates, width, height
             
 			
 			// testing detection
 //			int t = 1000;
-//            Rectangle region = new Rectangle(t, 0, 2560-t, 1440);
-//            
+            Rectangle region = new Rectangle(1076, 545, 1475-1076, 995-645);  
             
             
             // Capture screenshot of the specified region
