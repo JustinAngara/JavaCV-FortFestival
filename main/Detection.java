@@ -25,10 +25,13 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;
 import javax.swing.Timer;
 
 import org.jnativehook.GlobalScreen;
@@ -45,35 +48,44 @@ public class Detection implements NativeKeyListener{
 	
 	private static Robot bot;
 
+	// cv stuff
+	static CvSize cvSize;
+	static IplImage gry;
+	static CvMemStorage storage;
+	static CvSeq contours;
+	static int noOfContors;
+	static CvSeq ptr;
+	static int count;
+	static CvPoint p1;
+	static CvPoint p2;
+	static CvScalar color;
+	static CvRect sq;
+	
 	
 	public static void releaseInfo(IplImage img) throws AWTException {
 		if(img==null) {
 			return;
 		}
-        CvSize cvSize = cvSize(img.width(), img.height());
-        IplImage gry=cvCreateImage(cvSize, img.depth(), 1);
+        cvSize = cvSize(img.width(), img.height());
+        gry=cvCreateImage(cvSize, img.depth(), 1);
         cvCvtColor(img, gry, CV_BGR2GRAY);
         cvThreshold(gry, gry, 200, 255, CV_THRESH_BINARY);
         cvAdaptiveThreshold(gry, gry, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY_INV, 11, 5);
 
-        CvMemStorage storage = CvMemStorage.create();
-        CvSeq contours = new CvContour(null);
+        storage = CvMemStorage.create();
+        contours = new CvContour(null);
 
-        int noOfContors = cvFindContours(gry, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, new CvPoint(0,0));
+        noOfContors = cvFindContours(gry, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, new CvPoint(0,0));
 
-        CvSeq ptr = new CvSeq();
+        ptr = new CvSeq();
 
-        int count =1;
-        CvPoint p1 = new CvPoint(0,0),p2 = new CvPoint(0,0);
+        count =1;
+        p1 = new CvPoint(0,0);
+        p2 = new CvPoint(0,0);
 
         for (ptr = contours; ptr != null; ptr = ptr.h_next()) {
 
-            CvScalar color = CvScalar.BLUE;
-            CvRect sq = cvBoundingRect(ptr, 0);
-
-
-                
-                
+            sq = cvBoundingRect(ptr, 0);     
             if(sq.width() > sq.height()) {
                 System.out.println("Contour No ="+count);
                 System.out.println("X ="+ sq.x()+" Y="+ sq.y());
@@ -83,16 +95,18 @@ public class Detection implements NativeKeyListener{
                 p1.y(sq.y());
                 p2.y(sq.y()+sq.height());
                 cvRectangle(img, p1,p2, CV_RGB(255, 0, 0), 2, 8, 0);
-                cvDrawContours(img, ptr, color, CV_RGB(0,0,0), -1, CV_FILLED, 8, cvPoint(0,0));
+//                cvDrawContours(img, ptr, color, CV_RGB(0,0,0), -1, CV_FILLED, 8, cvPoint(0,0));
                 count++;
-                clickButton(sq.x(),sq.y());
+//                clickButton(sq.x(),sq.y());
             }
         }
         
 
         cvShowImage("contures",img);
-        cvWaitKey(0);
-        iterate();
+        cvWaitKey(1);
+      
+        
+//        iterate();
 	}
 	public static void clickButton(int x, int y) throws AWTException {
 		if(y > 140) {
@@ -121,17 +135,17 @@ public class Detection implements NativeKeyListener{
 	@Override
 	public void nativeKeyPressed(NativeKeyEvent arg0) {
 		// TODO Auto-generated method stub
-	    if (arg0.getKeyCode() == NativeKeyEvent.VC_Z) {
-	        t.start();
-	    }
+//	    if (arg0.getKeyCode() == NativeKeyEvent.VC_Z) {
+//	        t.start();
+//	    }
 	}
 
 	@Override
 	public void nativeKeyReleased(NativeKeyEvent arg0) {
 		// TODO Auto-generated method stub
-	    if (arg0.getKeyCode() == NativeKeyEvent.VC_Z) {
-	        t.stop();
-	    }
+//	    if (arg0.getKeyCode() == NativeKeyEvent.VC_Z) {
+//	        t.stop();
+//	    }
 	}
 
 	@Override
@@ -143,13 +157,14 @@ public class Detection implements NativeKeyListener{
 	
 	public static void iterate() {
 		try {
-            Robot robot = new Robot();
+
 
             
-            Rectangle region = new Rectangle(x, y, x1 - x, y1 - y); // Top-left coordinates, width, height
-
+            // Rectangle region = new Rectangle(x, y, x1 - x, y1 - y); // Top-left coordinates, width, height
+            int t = 1000;
+            Rectangle region = new Rectangle(t, 0, 2560-t, 1440);
             // Capture screenshot of the specified region
-            BufferedImage screenshot = robot.createScreenCapture(region);
+            BufferedImage screenshot = bot.createScreenCapture(region);
 
             // Convert to IplImage and process as before
             IplImage img = IplImage.createFrom(screenshot);
@@ -178,13 +193,21 @@ public class Detection implements NativeKeyListener{
         y = 633;
         y1= 1172;
         bot = new Robot();
+        color = CvScalar.BLUE;
 	}
+	
+
     public static void main(String[] args) throws AWTException {
     	config();
     	t = new Timer(250,(ActionEvent e)->{
-        	
-    		iterate();
+        	try {
+        		iterate();
+        	} catch(Exception e1) {
+        		System.err.println("Some sort of error "+e1.getMessage());
+        	}
     	});
+    	t.start();
+    	
     	run();
     }
     /*
