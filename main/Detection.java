@@ -26,11 +26,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
@@ -71,7 +74,8 @@ public class Detection implements NativeKeyListener{
         cvCvtColor(img, gry, CV_BGR2GRAY);
         cvThreshold(gry, gry, 200, 255, CV_THRESH_BINARY);
         cvAdaptiveThreshold(gry, gry, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY_INV, 11, 5);
-
+        
+        
         storage = CvMemStorage.create();
         contours = new CvContour(null);
 
@@ -160,19 +164,62 @@ public class Detection implements NativeKeyListener{
 
 
             
-            // Rectangle region = new Rectangle(x, y, x1 - x, y1 - y); // Top-left coordinates, width, height
-            int t = 1000;
-            Rectangle region = new Rectangle(t, 0, 2560-t, 1440);
+            Rectangle region = new Rectangle(x, y, x1 - x, y1 - y); // Top-left coordinates, width, height
+            
+			
+			// testing detection
+//			int t = 1000;
+//            Rectangle region = new Rectangle(t, 0, 2560-t, 1440);
+//            
+            
+            
             // Capture screenshot of the specified region
             BufferedImage screenshot = bot.createScreenCapture(region);
 
             // Convert to IplImage and process as before
-            IplImage img = IplImage.createFrom(screenshot);
+            IplImage img = returnGrayScale(screenshot);
+            
+            
+            
             releaseInfo(img);
         } catch (AWTException e) {
             e.printStackTrace();
         }
 	}
+	
+	public static IplImage returnGrayScale(BufferedImage img) {
+
+ 
+        // get image's width and height
+        int width = img.getWidth();
+        int height = img.getHeight();
+        int[] pixels = img.getRGB(0, 0, width, height, null, 0, width);
+        // convert to grayscale
+        for (int i = 0; i < pixels.length; i++) {
+ 
+            // Here i denotes the index of array of pixels
+            // for modifying the pixel value.
+            int p = pixels[i];
+ 
+            int a = (p >> 24) & 0xff;
+            int r = (p >> 16) & 0xff;
+            int g = (p >> 8) & 0xff;
+            int b = p & 0xff;
+ 
+            // calculate average
+            int avg = (r + g + b) / 3;
+ 
+            // replace RGB value with avg
+            p = (a << 24) | (avg << 16) | (avg << 8) | avg;
+ 
+            pixels[i] = p;
+        }
+        img.setRGB(0, 0, width, height, pixels, 0, width);
+        // write image
+        
+		return IplImage.createFrom(img);
+	}
+	
 	public static void run() throws AWTException {
 		GlobalScreen.addNativeKeyListener(new Detection());
 		LogManager.getLogManager().reset();
@@ -199,7 +246,7 @@ public class Detection implements NativeKeyListener{
 
     public static void main(String[] args) throws AWTException {
     	config();
-    	t = new Timer(250,(ActionEvent e)->{
+    	t = new Timer(50,(ActionEvent e)->{
         	try {
         		iterate();
         	} catch(Exception e1) {
