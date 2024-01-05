@@ -62,9 +62,14 @@ public class AltDetection implements NativeKeyListener{
 	private static JFrame frame;
 	private static JLabel imageLabel;
 	
+	private static Rectangle region;
+	private static BufferedImage screenshot;
+	
 	private static Detection d = new Detection();
-
-	private static List<Point> whitePointsList = new ArrayList<>();
+	
+	private static int targetRed, targetBlue, targetGreen, tolerance;
+	private static int red,green,blue;
+//	private static List<Point> whitePointsList = new ArrayList<>();
 	
 	public static void clickButton(int x, int y) throws AWTException {
 		if(y > 140) {
@@ -114,32 +119,21 @@ public class AltDetection implements NativeKeyListener{
 	
 	
 	public static void iterate() throws AWTException {
-// testing
-		Rectangle region = new Rectangle(800, 800, x1 - x, y1 - y); // Top-left coordinates, width, height
-//        Rectangle region = new Rectangle(1076, 545, 1475-1076, 995-645);  
+
+		region = new Rectangle(800, 800, x1 - x, y1 - y); // Top-left coordinates, width, height
+//        region = new Rectangle(1076, 545, 1475-1076, 995-645);  
+
+//		screenshot = returnGrayScale(bot.createScreenCapture(region));
+		screenshot = bot.createScreenCapture(region);
 		
-		// testing detection
-//			int t = 1000;
-//            Rectangle region = new Rectangle(t, 0, 2560-t, 1440);
-//            
-		
-		
-		// Capture screenshot of the specified region
-//		BufferedImage screenshot = returnGrayScale(bot.createScreenCapture(region));
-		BufferedImage screenshot = bot.createScreenCapture(region);
-		// Update the image on the label
-		int targetRed = 230;  // Adjust these values to the desired color
-		int targetGreen = 50;
-		int targetBlue = 50;
-		int tolerance = 25;
 
 		for (int y = 0; y < screenshot.getHeight(); y++) {
 		    for (int x = 0; x < screenshot.getWidth(); x++) {
 		        int pixel = screenshot.getRGB(x, y);
 
-		        int red = (pixel >> 16) & 0xFF;
-		        int green = (pixel >> 8) & 0xFF;
-		        int blue = pixel & 0xFF;
+		        red = (pixel >> 16) & 0xFF;
+		        green = (pixel >> 8) & 0xFF;
+		        blue = pixel & 0xFF;
 
 		        // Check if pixel values are within tolerance of target color
 		        if (Math.abs(red - targetRed) <= tolerance &&
@@ -150,8 +144,8 @@ public class AltDetection implements NativeKeyListener{
 		    }
 		}
 		imageLabel.setIcon(new ImageIcon(screenshot));
-        IplImage img = IplImage.createFrom(screenshot);
-        d.releaseInfo(img);
+		
+        d.releaseInfo(IplImage.createFrom(screenshot));
 	    
 	}
 	
@@ -217,6 +211,11 @@ public class AltDetection implements NativeKeyListener{
         
         bot = new Robot();
        
+		targetRed = 230;  
+		targetGreen = 50;
+		targetBlue = 50;
+		tolerance = 25;
+        
 	}
 	
 	public static void createFrame() {
