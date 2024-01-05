@@ -115,7 +115,7 @@ public class AltDetection implements NativeKeyListener{
 	
 	public static void iterate() throws AWTException {
 // testing
-		Rectangle region = new Rectangle(x, y, x1 - x, y1 - y); // Top-left coordinates, width, height
+		Rectangle region = new Rectangle(800, 800, x1 - x, y1 - y); // Top-left coordinates, width, height
 //        Rectangle region = new Rectangle(1076, 545, 1475-1076, 995-645);  
 		
 		// testing detection
