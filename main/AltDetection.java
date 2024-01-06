@@ -116,7 +116,16 @@ public class AltDetection implements NativeKeyListener{
 		// TODO Auto-generated method stub
 		
 	}
+	/*
+	Y-values between 490 and 510
 	
+	A: x=125
+	S: x=325
+	K: x=475
+	L: x=645
+	
+ 
+	 * */
 	
 	public static void iterate() throws AWTException {
 
