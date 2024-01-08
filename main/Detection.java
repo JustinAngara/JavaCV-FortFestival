@@ -92,10 +92,14 @@ public class Detection implements NativeKeyListener{
         
         for (ptr = contours; ptr != null; ptr = ptr.h_next()) {
 
-
+        	// Math.abs(sq.width() - sq.height()) <= 5 &&
+        	// sq.width() < 25 &&sq.width() > 10
             sq = cvBoundingRect(ptr, 0); 
-            if(Math.abs(sq.width() - sq.height()) <= 5 &&
-            	sq.width() < 25 &&sq.width() > 10) {
+            
+            if(sq.width()>90 && sq.width()<160 && 
+            	sq.height() > 30 && sq.height() < 70 &&
+            	sq.width() > sq.height() 
+            	&& noOfContors > 100) {
                 System.out.println("Contour No ="+count);
                 System.out.println("X ="+ sq.x()+" Y="+ sq.y());
                 System.out.println("Height ="+sq.height()+" Width ="+sq.width());
@@ -251,19 +255,19 @@ public class Detection implements NativeKeyListener{
 	}
 	
 
-    public static void main(String[] args) throws AWTException {
-    	config();
-    	t = new Timer(50,(ActionEvent e)->{
-        	try {
-        		iterate();
-        	} catch(Exception e1) {
-        		System.err.println("Some sort of error "+e1.getMessage());
-        	}
-    	});
-    	t.start();
-    	
-    	run();
-    }
+//    public static void main(String[] args) throws AWTException {
+//    	config();
+//    	t = new Timer(50,(ActionEvent e)->{
+//        	try {
+//        		iterate();
+//        	} catch(Exception e1) {
+//        		System.err.println("Some sort of error "+e1.getMessage());
+//        	}
+//    	});
+//    	t.start();
+//    	
+//    	run();
+//    }
     /*
     790, 1770 x2-x1
     1060, 1488 x2-x1
