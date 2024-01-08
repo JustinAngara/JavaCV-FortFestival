@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -51,7 +52,9 @@ import static com.googlecode.javacv.cpp.opencv_highgui.cvLoadImage;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 public class AltDetection implements NativeKeyListener{
-	private static Timer t;
+	private static Timer t, a,s,k,l;
+//	private static List<Boolean> shouldDelayTest = new ArrayList<Boolean>();
+	private static boolean shouldDelayTest;
 	private static int x;
 	private static int x1;
 	private static int y;
@@ -69,8 +72,8 @@ public class AltDetection implements NativeKeyListener{
 	
 	private static int targetRed, targetBlue, targetGreen, tolerance;
 	private static int red,green,blue;
-//	private static List<Point> whitePointsList = new ArrayList<>();
-	
+	private static List<Point> whitePointsList = new ArrayList<>();
+
 	public static void clickButton(int x, int y) throws AWTException {
 		if(y > 140) {
 			return;
@@ -129,13 +132,15 @@ public class AltDetection implements NativeKeyListener{
 	
 	public static void iterate() throws AWTException {
 
-		region = new Rectangle(800, 800, x1 - x, y1 - y); // Top-left coordinates, width, height
+		region = new Rectangle(x, y, x1 - x, y1 - y); // Top-left coordinates, width, height
 //        region = new Rectangle(1076, 545, 1475-1076, 995-645);  
 
-//		screenshot = returnGrayScale(bot.createScreenCapture(region));
-		screenshot = bot.createScreenCapture(region);
+		screenshot = returnGrayScale(bot.createScreenCapture(region));
+//		screenshot = bot.createScreenCapture(region);
 		
-
+		
+		//y value 530 
+/*		
 		for (int y = 0; y < screenshot.getHeight(); y++) {
 		    for (int x = 0; x < screenshot.getWidth(); x++) {
 		        int pixel = screenshot.getRGB(x, y);
@@ -148,15 +153,25 @@ public class AltDetection implements NativeKeyListener{
 		        if (Math.abs(red - targetRed) <= tolerance &&
 		            Math.abs(green - targetGreen) <= tolerance &&
 		            Math.abs(blue - targetBlue) <= tolerance) {
-		            screenshot.setRGB(x, y, 0x00FF00); // Set red pixel (or any other color you want)
-		        } 
+		            screenshot.setRGB(x, y, 0xFFFFFF); // Set red pixel (or any other color you want)
+		            System.out.println(screenshot.getHeight());
+		            System.out.println("Y VAlUE AT DETECTION: "+y);
+		        } else {
+		        	screenshot.setRGB(x, y, 0x000000);
+		        }
+		        
+
 		    }
 		}
-		imageLabel.setIcon(new ImageIcon(screenshot));
+*/
 		
+		// creates the javacv instance
+		imageLabel.setIcon(new ImageIcon(screenshot));
         d.releaseInfo(IplImage.createFrom(screenshot));
 	    
 	}
+	
+ 
 	
 	public static BufferedImage returnGrayScale(BufferedImage img) {
 
@@ -220,9 +235,9 @@ public class AltDetection implements NativeKeyListener{
         
         bot = new Robot();
        
-		targetRed = 230;  
-		targetGreen = 50;
-		targetBlue = 50;
+		targetRed = 250;  
+		targetGreen = 250;
+		targetBlue = 250;
 		tolerance = 25;
         
 	}
@@ -236,19 +251,39 @@ public class AltDetection implements NativeKeyListener{
 	    
 	    frame.pack();
 	    frame.setVisible(true);
-	}
-    public static void main(String[] args) throws AWTException {
-    	config();
-    	createFrame();
-    	t = new Timer(50,(ActionEvent e)->{
+	    // going to start it up
+	    t = new Timer(20,(ActionEvent e)->{
         	try {
         		iterate();
         	} catch(Exception e1) {
         		System.err.println("Some sort of error "+e1.getMessage());
         	}
     	});
-    
-    	
+	    
+	}
+    public static void main(String[] args) throws AWTException {
+    	config();
+    	createFrame();
     	run();
+    	
+    	
+    	
+    	shouldDelayTest = false;
+
+		Timer test = new Timer(250, (ActionEvent e) -> {
+		    if (!shouldDelayTest) {
+		        // do stuff
+		    	System.out.println("test");
+		    } else {
+		        try {
+		            TimeUnit.SECONDS.sleep(1); // Delay for 1 second
+		        } catch (InterruptedException e1) {
+		            e1.printStackTrace();
+		        }
+		        shouldDelayTest = false; // Reset the flag for next time
+		    }
+		});
+//		test.start();
+		
     }
 }
